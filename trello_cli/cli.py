@@ -6,7 +6,10 @@ from trello_cli.commands.agent_guide import agent_guide
 from trello_cli.commands.auth import auth
 from trello_cli.commands.board import board
 from trello_cli.commands.card import card
+from trello_cli.commands.checklist import _register as _register_checklist
 from trello_cli.commands.list_cmd import list_cmd
+
+_register_checklist(card)
 
 
 @click.group(help="Trello CLI — drive your board from the terminal (and from Claude Code).")

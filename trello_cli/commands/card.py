@@ -273,3 +273,84 @@ def label_remove_cmd(card_query: str, label_query: str) -> None:
     console.print(
         f"[green]removed label[/green] '{lbl.get('name') or lbl.get('color')}' from '{c['name']}'"
     )
+
+
+# --- members ---
+
+
+def _resolve_member(members: list[dict], query: str) -> dict:
+    for m in members:
+        if m["id"] == query:
+            return m
+    q = query.strip().lower().lstrip("@")
+    for m in members:
+        if (m.get("username") or "").lower() == q:
+            return m
+    exact = [m for m in members if (m.get("fullName") or "").lower() == q]
+    if len(exact) == 1:
+        return exact[0]
+    if len(exact) > 1:
+        raise SystemExit(
+            f"Ambiguous member '{query}': use username or id from `trello card member ls`."
+        )
+    subs = [
+        m
+        for m in members
+        if q in (m.get("username") or "").lower()
+        or q in (m.get("fullName") or "").lower()
+    ]
+    if len(subs) == 1:
+        return subs[0]
+    if len(subs) > 1:
+        raise SystemExit(
+            f"Ambiguous member '{query}': {[m.get('username') for m in subs]}"
+        )
+    raise SystemExit(f"No member matching '{query}'. Run `trello card member ls`.")
+
+
+@card.group("member", help="Assign or unassign members on a card.")
+def member_group() -> None:
+    pass
+
+
+@member_group.command("ls", help="List members of the current board.")
+def member_ls_cmd() -> None:
+    _, board_id, client = _load_board_context()
+    members = client.board_members(board_id)
+    table = Table(title="Board members")
+    table.add_column("id", style="dim")
+    table.add_column("username")
+    table.add_column("name")
+    for m in members:
+        table.add_row(m["id"], m.get("username") or "", m.get("fullName") or "")
+    console.print(table)
+
+
+@member_group.command("add", help="Assign a member to a card (by username, full name, or id).")
+@click.argument("card_query")
+@click.argument("member_query")
+def member_add_cmd(card_query: str, member_query: str) -> None:
+    _, board_id, client = _load_board_context()
+    cards = client.board_cards(board_id)
+    c = resolve_card(cards, card_query)
+    members = client.board_members(board_id)
+    m = _resolve_member(members, member_query)
+    client.add_member_to_card(c["id"], m["id"])
+    console.print(
+        f"[green]assigned[/green] @{m.get('username')} to '{c['name']}'"
+    )
+
+
+@member_group.command("remove", help="Unassign a member from a card.")
+@click.argument("card_query")
+@click.argument("member_query")
+def member_remove_cmd(card_query: str, member_query: str) -> None:
+    _, board_id, client = _load_board_context()
+    cards = client.board_cards(board_id)
+    c = resolve_card(cards, card_query)
+    members = client.board_members(board_id)
+    m = _resolve_member(members, member_query)
+    client.remove_member_from_card(c["id"], m["id"])
+    console.print(
+        f"[green]unassigned[/green] @{m.get('username')} from '{c['name']}'"
+    )

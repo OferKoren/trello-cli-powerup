@@ -4,24 +4,46 @@ Lightweight Trello CLI built to be driven by Claude Code during coding sessions.
 
 ## Install
 
-**Recommended: pipx** (puts `trello` on PATH globally, isolated env, usable from any project):
+**Recommended: pipx from GitHub** (no clone needed, `trello` on PATH globally, isolated env, usable from any project):
 
 ```bash
-brew install pipx            # first time only
-pipx install -e /absolute/path/to/trello_cli_powerup
+brew install pipx            # first time only (macOS)
+pipx ensurepath              # first time only — adds ~/.local/bin to PATH
+
+pipx install git+https://github.com/OferKoren/trello-cli-powerup.git
 ```
 
-`-e` keeps it editable — code changes apply without reinstall.
+pipx clones the repo into an isolated environment under the hood. You get a `trello` binary without a local checkout.
 
-**Alternative: venv** (only works while venv is active):
+**Upgrade later:**
 
 ```bash
-cd trello_cli_powerup
+pipx upgrade trello-cli
+```
+
+**Pin a branch / tag / commit:**
+
+```bash
+pipx install git+https://github.com/OferKoren/trello-cli-powerup.git@main
+pipx install git+https://github.com/OferKoren/trello-cli-powerup.git@v0.2.0
+```
+
+**Contributing locally** (editable install from a clone):
+
+```bash
+git clone https://github.com/OferKoren/trello-cli-powerup.git
+cd trello-cli-powerup
+pipx install -e .            # changes to source apply without reinstall
+```
+
+**Venv alternative** (only works while venv is active — use only if you don't want pipx):
+
+```bash
+git clone https://github.com/OferKoren/trello-cli-powerup.git
+cd trello-cli-powerup
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
-
-Either way you get a `trello` binary.
 
 ## Auth
 
@@ -134,17 +156,17 @@ Why this setup:
 
 ## Share with teammates
 
-Push this repo to GitHub, then each teammate runs:
+Each teammate runs the same one-liner from **Install** above:
 
 ```bash
-pipx install git+https://github.com/<you>/trello-cli-powerup.git
-trello auth setup          # each teammate uses their own key+token
-trello board use "<board>" # point at the shared team board
+pipx install git+https://github.com/OferKoren/trello-cli-powerup.git
+trello auth setup                 # each teammate uses their own key+token
+trello board use "<shared board>" # point at the shared team board
 ```
 
 Tokens are personal — never commit `~/.trello-cli/config.json` or share tokens.
 
-Update flow: push changes → teammates run `pipx upgrade trello-cli`.
+Updates: push to `main` → teammates run `pipx upgrade trello-cli`.
 
 ## Dev
 

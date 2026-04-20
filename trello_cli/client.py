@@ -143,6 +143,63 @@ class TrelloClient:
     def remove_label_from_card(self, card_id: str, label_id: str) -> Any:
         return self.delete(f"/cards/{card_id}/idLabels/{label_id}")
 
+    # --- members ---
+
+    def board_members(self, board_id: str) -> list[dict[str, Any]]:
+        return self.get(
+            f"/boards/{board_id}/members",
+            {"fields": "id,username,fullName"},
+        )
+
+    def add_member_to_card(self, card_id: str, member_id: str) -> Any:
+        return self.post(f"/cards/{card_id}/idMembers", {"value": member_id})
+
+    def remove_member_from_card(self, card_id: str, member_id: str) -> Any:
+        return self.delete(f"/cards/{card_id}/idMembers/{member_id}")
+
+    # --- checklists ---
+
+    def card_checklists(self, card_id: str) -> list[dict[str, Any]]:
+        return self.get(
+            f"/cards/{card_id}/checklists",
+            {"fields": "id,name,idCard", "checkItems": "all",
+             "checkItem_fields": "name,state,pos"},
+        )
+
+    def create_checklist(self, card_id: str, name: str) -> dict[str, Any]:
+        return self.post("/checklists", {"idCard": card_id, "name": name})
+
+    def rename_checklist(self, checklist_id: str, name: str) -> dict[str, Any]:
+        return self.put(f"/checklists/{checklist_id}", {"name": name})
+
+    def delete_checklist(self, checklist_id: str) -> Any:
+        return self.delete(f"/checklists/{checklist_id}")
+
+    def add_check_item(
+        self, checklist_id: str, name: str, checked: bool = False
+    ) -> dict[str, Any]:
+        return self.post(
+            f"/checklists/{checklist_id}/checkItems",
+            {"name": name, "checked": "true" if checked else "false"},
+        )
+
+    def update_check_item(
+        self,
+        card_id: str,
+        item_id: str,
+        state: str | None = None,
+        name: str | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {}
+        if state is not None:
+            params["state"] = state
+        if name is not None:
+            params["name"] = name
+        return self.put(f"/cards/{card_id}/checkItem/{item_id}", params)
+
+    def delete_check_item(self, checklist_id: str, item_id: str) -> Any:
+        return self.delete(f"/checklists/{checklist_id}/checkItems/{item_id}")
+
 
 def _basename(path: str) -> str:
     import os
