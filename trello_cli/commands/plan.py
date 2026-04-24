@@ -72,21 +72,21 @@ def _register(card_group: click.Group) -> None:
         c = resolve_card(cards, card_query)
 
         entries = client.get_plugin_data(c["id"], cfg.power_up_id)
-        # pluginData value is stored as a JSON string by the Power-Up
         plan_data = None
         for entry in entries:
             raw = entry.get("value")
-            if raw:
-                try:
-                    obj = json.loads(raw)
-                except (ValueError, TypeError):
-                    obj = raw
-                # The power-up stores the whole card's pluginData in shared scope
-                # keyed by scope. Check if the entry contains 'plan' key.
-                if isinstance(obj, dict) and "shared" in obj:
-                    plan_data = obj["shared"].get("plan")
-                elif isinstance(obj, dict) and ("body" in obj or "subtasks" in obj):
-                    plan_data = obj
+            if not raw:
+                continue
+            try:
+                obj = json.loads(raw)
+            except (ValueError, TypeError):
+                continue
+            if isinstance(obj, dict):
+                # Trello stores t.set('card','shared','plan',{...}) as {"plan": {...}}
+                candidate = obj.get("plan")
+                if isinstance(candidate, dict) and ("body" in candidate or "subtasks" in candidate):
+                    plan_data = candidate
+                    break
 
         if plan_data is None:
             console.print(f"[dim]No plan data found for '{c['name']}'. Add one via the Power-Up card-back UI.[/dim]")

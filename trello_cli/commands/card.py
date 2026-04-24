@@ -9,6 +9,7 @@ from rich.table import Table
 from trello_cli.client import TrelloClient
 from trello_cli.config import load_config, require_auth, require_board
 from trello_cli.resolve import resolve_card, resolve_one
+from trello_cli.commands.plan import _get_fields_map
 
 console = Console()
 
@@ -371,12 +372,13 @@ def attach_spec_cmd(card_query: str, path: str) -> None:
     att = client.attach_file(c["id"], path, "spec.md")
     console.print(f"[green]attached spec.md[/green] to '{c['name']}' (attachment id: {att.get('id', '?')})")
     # flip Custom Field
-    fields = client.list_custom_fields(board_id)
-    fields_map = {f["name"]: f for f in fields}
+    fields_map = _get_fields_map(client, board_id)
     if "spec_attached" in fields_map:
         field = fields_map["spec_attached"]
         client.set_custom_field_value(c["id"], field["id"], True, "checkbox")
         console.print("[green]set[/green] spec_attached = true")
+    else:
+        console.print("[yellow]warning[/yellow] 'spec_attached' field not found — run `trello board init-agent-fields` first")
 
 
 @card.command("attach-plan", help="Attach plan.md to a card and mark plan_attached=true.")
@@ -392,9 +394,10 @@ def attach_plan_cmd(card_query: str, path: str) -> None:
     att = client.attach_file(c["id"], path, "plan.md")
     console.print(f"[green]attached plan.md[/green] to '{c['name']}' (attachment id: {att.get('id', '?')})")
     # flip Custom Field
-    fields = client.list_custom_fields(board_id)
-    fields_map = {f["name"]: f for f in fields}
+    fields_map = _get_fields_map(client, board_id)
     if "plan_attached" in fields_map:
         field = fields_map["plan_attached"]
         client.set_custom_field_value(c["id"], field["id"], True, "checkbox")
         console.print("[green]set[/green] plan_attached = true")
+    else:
+        console.print("[yellow]warning[/yellow] 'plan_attached' field not found — run `trello board init-agent-fields` first")
