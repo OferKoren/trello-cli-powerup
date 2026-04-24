@@ -17,12 +17,16 @@ def auth() -> None:
 @auth.command("setup", help="Prompt for API key + token and save them.")
 @click.option("--key", default=None, help="Trello API key (prompted if omitted).")
 @click.option("--token", default=None, help="Trello API token (prompted if omitted).")
-def setup_cmd(key: str | None, token: str | None) -> None:
+@click.option("--power-up-id", "power_up_id", default=None,
+              help="Trello Power-Up (plugin) id — from https://trello.com/power-ups/admin.")
+def setup_cmd(key: str | None, token: str | None, power_up_id: str | None) -> None:
     cfg = load_config()
     key = key or click.prompt("Trello API key (from https://trello.com/app-key)", default=cfg.key or None)
     token = token or click.prompt("Trello API token", hide_input=True, default=cfg.token or None)
     cfg.key = key.strip()
     cfg.token = token.strip()
+    if power_up_id is not None:
+        cfg.power_up_id = power_up_id.strip()
     save_config(cfg)
     try:
         me = TrelloClient(cfg).whoami()

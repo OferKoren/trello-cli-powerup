@@ -23,6 +23,16 @@ class TrelloClient:
     def _auth_params(self) -> dict[str, str]:
         return {"key": self.key, "token": self.token}
 
+    def _handle(self, resp: requests.Response) -> Any:
+        if resp.status_code >= 400:
+            raise TrelloError(f"{resp.request.method} {resp.url} -> {resp.status_code}: {resp.text}")
+        if not resp.content:
+            return None
+        try:
+            return resp.json()
+        except ValueError:
+            return resp.text
+
     def _request(
         self,
         method: str,
@@ -35,14 +45,7 @@ class TrelloClient:
         resp = self.session.request(
             method, url, params=merged, files=files, timeout=self.timeout
         )
-        if resp.status_code >= 400:
-            raise TrelloError(f"{method} {path} -> {resp.status_code}: {resp.text}")
-        if not resp.content:
-            return None
-        try:
-            return resp.json()
-        except ValueError:
-            return resp.text
+        return self._handle(resp)
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> Any:
         return self._request("GET", path, params)
@@ -57,6 +60,13 @@ class TrelloClient:
 
     def put(self, path: str, params: dict[str, Any] | None = None) -> Any:
         return self._request("PUT", path, params)
+
+    def put_json(self, path: str, body: dict[str, Any]) -> Any:
+        url = f"{BASE_URL}{path}"
+        resp = self.session.put(
+            url, params=self._auth_params(), json=body, timeout=self.timeout
+        )
+        return self._handle(resp)
 
     def delete(self, path: str, params: dict[str, Any] | None = None) -> Any:
         return self._request("DELETE", path, params)
@@ -78,7 +88,7 @@ class TrelloClient:
     def board_cards(self, board_id: str) -> list[dict[str, Any]]:
         return self.get(
             f"/boards/{board_id}/cards",
-            {"fields": "id,idShort,name,idList,due,labels,url,closed"},
+            {"fields": "id,idShort,name,idList,due,labels,url,closed,shortLink"},
         )
 
     def card(self, card_id: str) -> dict[str, Any]:
@@ -199,6 +209,70 @@ class TrelloClient:
 
     def delete_check_item(self, checklist_id: str, item_id: str) -> Any:
         return self.delete(f"/checklists/{checklist_id}/checkItems/{item_id}")
+
+    # --- agent powerup ---
+
+    def get_plugin_data(self, card_id: str, id_plugin: str | None = None) -> list[dict[str, Any]]:
+        data = self.get(f"/cards/{card_id}/pluginData")
+        if data is None:
+            return []
+        if id_plugin:
+            return [e for e in data if e.get("idPlugin") == id_plugin]
+        return data
+
+    def get_board_plugin_data(self, board_id: str) -> list[dict[str, Any]]:
+        data = self.get(f"/boards/{board_id}/pluginData")
+        return data if data is not None else []
+
+    def list_custom_fields(self, board_id: str) -> list[dict[str, Any]]:
+        data = self.get(f"/boards/{board_id}/customFields")
+        return data if data is not None else []
+
+    def create_custom_field(
+        self,
+        board_id: str,
+        name: str,
+        type: str,
+        options: list[str] | None = None,
+        pos: str = "bottom",
+        display_card_front: bool = True,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {
+            "idModel": board_id,
+            "modelType": "board",
+            "name": name,
+            "type": type,
+            "pos": pos,
+            "display_cardFront": "true" if display_card_front else "false",
+        }
+        if options:
+            for i, opt in enumerate(options):
+                params[f"options[{i}][value][text]"] = opt
+                params[f"options[{i}][color]"] = "none"
+                params[f"options[{i}][pos]"] = str(i)
+        return self.post("/customFields", params)
+
+    def get_custom_field_items(self, card_id: str) -> list[dict[str, Any]]:
+        data = self.get(f"/cards/{card_id}/customFieldItems")
+        return data if data is not None else []
+
+    def set_custom_field_value(
+        self, card_id: str, field_id: str, value: Any, field_type: str
+    ) -> dict[str, Any]:
+        if field_type == "list":
+            body: dict[str, Any] = {"idValue": value}
+        elif field_type == "checkbox":
+            body = {"value": {"checked": "true" if value else "false"}}
+        elif field_type == "date":
+            body = {"value": {"date": value}}
+        elif field_type == "number":
+            body = {"value": {"number": str(value)}}
+        else:  # text
+            body = {"value": {"text": str(value)}}
+        return self.put_json(f"/cards/{card_id}/customField/{field_id}/item", body)
+
+    def create_list(self, board_id: str, name: str, pos: str | int = "bottom") -> dict[str, Any]:
+        return self.post("/lists", {"idBoard": board_id, "name": name, "pos": str(pos)})
 
 
 def _basename(path: str) -> str:

@@ -1,7 +1,17 @@
 """Fuzzy/short-id resolution for boards, lists, cards."""
 from __future__ import annotations
 
+import re
 from typing import Any
+
+
+_CARD_URL_RE = re.compile(r"https?://trello\.com/c/([A-Za-z0-9]+)(?:/.*)?$")
+
+
+def parse_card_url(s: str) -> str | None:
+    """Return the short link id from a Trello card URL, or None."""
+    m = _CARD_URL_RE.match(s.strip())
+    return m.group(1) if m else None
 
 
 def _norm(s: str) -> str:
@@ -28,10 +38,16 @@ def resolve_one(items: list[dict[str, Any]], query: str, field: str = "name") ->
 
 
 def resolve_card(cards: list[dict[str, Any]], query: str) -> dict[str, Any]:
-    """Accept full id, short id (numeric), or fuzzy name."""
+    """Accept full id, short id (numeric), Trello card URL, or fuzzy name."""
     for c in cards:
         if c.get("id") == query:
             return c
+    short_link = parse_card_url(query)
+    if short_link:
+        for c in cards:
+            if c.get("shortLink") == short_link:
+                return c
+        raise SystemExit(f"No card with short link '{short_link}' on current board.")
     if query.isdigit():
         short = int(query)
         for c in cards:
