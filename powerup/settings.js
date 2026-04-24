@@ -8,7 +8,7 @@ function saveSettings() {
     document.getElementById('version-display').textContent = 'Enter a URL to save.';
     return;
   }
-  try { new URL(url); } catch(e) {
+  if (!/^https?:\/\/.+/.test(url)) {
     document.getElementById('version-display').textContent = 'Invalid URL — must start with https://';
     return;
   }

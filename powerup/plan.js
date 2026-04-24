@@ -11,6 +11,13 @@ var AGENT_OPTIONS = [
 
 /* ---- utilities ---- */
 
+function arrayFind(arr, fn) {
+  for (var i = 0; i < arr.length; i++) {
+    if (fn(arr[i])) return arr[i];
+  }
+  return undefined;
+}
+
 function uid() {
   return 'st' + Math.random().toString(36).slice(2, 9);
 }
@@ -122,11 +129,11 @@ function updateAgentDot() {
   ]).then(function(results) {
     var items = results[0].customFieldItems || [];
     var fields = results[1].customFields || [];
-    var statusField = fields.find(function(f) { return f.name === 'agent_status'; });
+    var statusField = arrayFind(fields, function(f) { return f.name === 'agent_status'; });
     if (!statusField) return;
-    var item = items.find(function(i) { return i.idCustomField === statusField.id; });
+    var item = arrayFind(items, function(i) { return i.idCustomField === statusField.id; });
     if (!item) return;
-    var opt = (statusField.options || []).find(function(o) { return o.id === item.idValue; });
+    var opt = arrayFind(statusField.options || [], function(o) { return o.id === item.idValue; });
     var status = opt ? opt.value.text : 'idle';
     var bar = document.getElementById('agent-status-bar');
     var dot = document.getElementById('agent-dot');

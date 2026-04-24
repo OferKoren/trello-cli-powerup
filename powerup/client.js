@@ -9,6 +9,13 @@ var LIGHT_ICON = './icons/icon-light.svg';
 var AGENT_FIELDS = ['agent_status', 'branch', 'worktree_path', 'model_tag',
                     'agent_tag', 'last_run_at', 'spec_attached', 'plan_attached'];
 
+function arrayFind(arr, fn) {
+  for (var i = 0; i < arr.length; i++) {
+    if (fn(arr[i])) return arr[i];
+  }
+  return undefined;
+}
+
 function getAgentStatus(t) {
   return Promise.all([
     t.card('customFieldItems'),
@@ -16,11 +23,11 @@ function getAgentStatus(t) {
   ]).then(function(results) {
     var items = results[0].customFieldItems || [];
     var fields = results[1].customFields || [];
-    var statusField = fields.find(function(f) { return f.name === 'agent_status'; });
+    var statusField = arrayFind(fields, function(f) { return f.name === 'agent_status'; });
     if (!statusField) return 'idle';
-    var item = items.find(function(i) { return i.idCustomField === statusField.id; });
+    var item = arrayFind(items, function(i) { return i.idCustomField === statusField.id; });
     if (!item || !item.idValue) return 'idle';
-    var opt = (statusField.options || []).find(function(o) { return o.id === item.idValue; });
+    var opt = arrayFind(statusField.options || [], function(o) { return o.id === item.idValue; });
     return opt ? opt.value.text : 'idle';
   }).catch(function() { return 'idle'; });
 }

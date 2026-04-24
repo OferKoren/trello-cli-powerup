@@ -35,8 +35,11 @@ trello <group> <command> --help
 | List commands   | `trello_cli/commands/list_cmd.py` |
 | Card commands   | `trello_cli/commands/card.py` |
 | Agent guide     | `trello_cli/commands/agent_guide.py` |
-| Tests           | `tests/test_client.py`, `tests/test_resolve.py` |
+| Plan commands   | `trello_cli/commands/plan.py` |
+| Tests           | `tests/test_client.py`, `tests/test_resolve.py`, `tests/test_plugin_data.py`, `tests/test_custom_fields.py`, `tests/test_init_agent_fields.py` |
 | Packaging       | `pyproject.toml` |
+| Power-Up JS     | `powerup/client.js`, `powerup/plan.js`, `powerup/policies.js`, `powerup/settings.js`, `powerup/version.js` |
+| Power-Up HTML   | `powerup/index.html`, `powerup/plan.html`, `powerup/policies.html`, `powerup/settings.html` |
 
 ## Adding new commands
 
