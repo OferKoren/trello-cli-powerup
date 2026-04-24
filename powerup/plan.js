@@ -44,11 +44,11 @@ function applyPanelState(expanded) {
   if (expanded) {
     body.style.display = 'block';
     arrow.innerHTML = '&#9660;'; /* ▼ */
-    t.sizeTo(document.body);
+    setTimeout(function() { t.sizeTo(document.body); }, 0);
   } else {
     body.style.display = 'none';
     arrow.innerHTML = '&#9654;'; /* ▶ */
-    t.sizeTo('#collapse-toggle');
+    t.sizeTo(document.body);
   }
 }
 
