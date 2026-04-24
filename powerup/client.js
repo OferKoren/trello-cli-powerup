@@ -1,7 +1,7 @@
 /* global TrelloPowerUp */
 
 var GRAY_ICON     = './icons/icon-gray.svg';
-var POLICIES_ICON = './icons/icon-policies.svg';
+var POLICIES_ICON = 'https://powerup-peach.vercel.app/icons/icon-policies.svg';
 
 /* ---- helpers ---- */
 
