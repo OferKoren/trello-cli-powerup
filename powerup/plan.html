@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Agent Plan</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tab-plan" role="tab" onclick="switchTab('plan')">Plan</button>
+    <button class="tab" id="tab-mt" role="tab" disabled>
+      Manual Testing <span class="tab-badge">v2</span>
+    </button>
+  </div>
+
+  <div id="content-plan" class="tab-content active">
+    <div id="agent-status-bar" style="display:none; margin-bottom:12px; font-size:13px;">
+      <span class="agent-dot" id="agent-dot"></span>
+      <span id="agent-status-text">idle</span>
+    </div>
+
+    <label style="font-weight:600; font-size:13px; display:block; margin-bottom:4px;">Plan</label>
+    <textarea id="plan-body" class="plan-body" maxlength="3500"
+              placeholder="Describe the goal and approach for this feature..."></textarea>
+
+    <label style="font-weight:600; font-size:13px; display:block; margin-bottom:8px; margin-top:4px;">
+      Subtasks
+    </label>
+    <ul id="subtasks" class="subtasks"></ul>
+    <button class="btn btn-secondary" onclick="addSubtask()" style="margin-bottom:4px;">+ Add subtask</button>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="savePlan()">Save</button>
+      <button class="btn btn-secondary" onclick="loadPlan()">Reload</button>
+    </div>
+  </div>
+
+  <div id="content-mt" class="tab-content">
+    <!-- Manual Testing tab — v2 -->
+    <p style="color:#5e6c84; font-size:13px; padding:16px; text-align:center;">
+      Manual Testing UI coming in v2.
+    </p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <script src="./plan.js"></script>
+</body>
+</html>
