@@ -43,3 +43,13 @@ def test_resolve_card_by_name():
         {"id": "bbb", "idShort": 2, "name": "add logout"},
     ]
     assert resolve_card(cards, "login")["id"] == "aaa"
+
+
+def test_resolve_card_by_url():
+    """Resolves a card from its full Trello URL via shortLink."""
+    cards = [
+        {"id": "abc123", "idShort": 1, "name": "My Card", "shortLink": "xY9zW"},
+        {"id": "def456", "idShort": 2, "name": "Other",   "shortLink": "aB3cD"},
+    ]
+    c = resolve_card(cards, "https://trello.com/c/xY9zW/my-card-title")
+    assert c["id"] == "abc123"
