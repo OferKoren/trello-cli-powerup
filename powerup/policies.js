@@ -22,6 +22,7 @@ var BUILT_IN_POLICIES = [
 
 function renderPolicies() {
   var ul = document.getElementById('policies');
+  ul.innerHTML = '';  // clear before re-render
   BUILT_IN_POLICIES.forEach(function(p) {
     var li = document.createElement('li');
     li.className = 'policy-item';

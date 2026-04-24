@@ -4,6 +4,14 @@ var t = TrelloPowerUp.iframe();
 
 function saveSettings() {
   var url = document.getElementById('cli-base-url').value.trim();
+  if (!url) {
+    document.getElementById('version-display').textContent = 'Enter a URL to save.';
+    return;
+  }
+  try { new URL(url); } catch(e) {
+    document.getElementById('version-display').textContent = 'Invalid URL — must start with https://';
+    return;
+  }
   t.set('board', 'private', 'cliBaseUrl', url).then(function() {
     document.getElementById('version-display').textContent =
       'Saved. Agent Power-Up v' + POWERUP_VERSION;
