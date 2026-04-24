@@ -103,7 +103,7 @@ def _register(card_group: click.Group) -> None:
             table = Table(title="Subtasks")
             table.add_column("#", width=3)
             table.add_column("done", width=5)
-            table.add_column("task")
+            table.add_column("text")
             table.add_column("model")
             table.add_column("agent")
             table.add_column("rejection")
