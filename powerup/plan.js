@@ -36,6 +36,31 @@ function switchTab(name) {
   document.getElementById('content-' + name).classList.add('active');
 }
 
+/* ---- collapse / expand panel ---- */
+
+function applyPanelState(expanded) {
+  var body = document.getElementById('panel-body');
+  var arrow = document.getElementById('collapse-arrow');
+  if (expanded) {
+    body.style.display = 'block';
+    arrow.innerHTML = '&#9660;'; /* ▼ */
+    t.sizeTo(document.body);
+  } else {
+    body.style.display = 'none';
+    arrow.innerHTML = '&#9654;'; /* ▶ */
+    t.sizeTo('#collapse-toggle');
+  }
+}
+
+function togglePanel() {
+  t.get('card', 'shared', 'agentPanelExpanded').then(function(current) {
+    var next = !current;
+    return t.set('card', 'shared', 'agentPanelExpanded', next).then(function() {
+      applyPanelState(next);
+    });
+  });
+}
+
 /* ---- subtask rendering ---- */
 
 function buildSelect(options, selectedValue, cls) {
@@ -147,13 +172,18 @@ function updateAgentDot() {
 /* ---- load / save ---- */
 
 function loadPlan() {
-  return t.get('card', 'shared', 'plan').then(function(plan) {
+  return Promise.all([
+    t.get('card', 'shared', 'plan'),
+    t.get('card', 'shared', 'agentPanelExpanded')
+  ]).then(function(results) {
+    var plan = results[0];
+    var expanded = results[1] === true;
     if (plan && typeof plan === 'object') {
       populateForm(plan);
     }
-    return updateAgentDot();
-  }).then(function() {
-    t.sizeTo('#content-plan');
+    return updateAgentDot().then(function() {
+      applyPanelState(expanded);
+    });
   });
 }
 
