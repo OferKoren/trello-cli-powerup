@@ -1,8 +1,9 @@
 /* global TrelloPowerUp */
 
-var GRAY_ICON  = './icons/icon-gray.svg';
-var DARK_ICON  = './icons/icon-dark.svg';
-var LIGHT_ICON = './icons/icon-light.svg';
+var GRAY_ICON     = './icons/icon-gray.svg';
+var DARK_ICON     = './icons/icon-dark.svg';
+var LIGHT_ICON    = './icons/icon-light.svg';
+var POLICIES_ICON = './icons/icon-policies.svg';
 
 /* ---- helpers ---- */
 
@@ -90,10 +91,7 @@ TrelloPowerUp.initialize({
 
   'board-buttons': function(t, opts) {
     return [{
-      icon: {
-        dark:  LIGHT_ICON,
-        light: DARK_ICON
-      },
+      icon: POLICIES_ICON,
       text: 'Agent Policies',
       callback: function(t) {
         return t.modal({
