@@ -8,8 +8,10 @@ from typing import Any
 _CARD_URL_RE = re.compile(r"https?://trello\.com/c/([A-Za-z0-9]+)(?:/.*)?$")
 
 
-def parse_card_url(s: str) -> str | None:
+def parse_card_url(s: str | None) -> str | None:
     """Return the short link id from a Trello card URL, or None."""
+    if not s:
+        return None
     m = _CARD_URL_RE.match(s.strip())
     return m.group(1) if m else None
 

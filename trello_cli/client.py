@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import requests
@@ -39,12 +40,19 @@ class TrelloClient:
         path: str,
         params: dict[str, Any] | None = None,
         files: dict[str, Any] | None = None,
+        json_body: dict[str, Any] | None = None,
     ) -> Any:
         url = f"{BASE_URL}{path}"
-        merged = {**self._auth_params(), **(params or {})}
-        resp = self.session.request(
-            method, url, params=merged, files=files, timeout=self.timeout
-        )
+        if json_body is not None:
+            # Auth in query string; content in JSON body
+            resp = self.session.request(
+                method, url, params=self._auth_params(), json=json_body, timeout=self.timeout
+            )
+        else:
+            merged = {**self._auth_params(), **(params or {})}
+            resp = self.session.request(
+                method, url, params=merged, files=files, timeout=self.timeout
+            )
         return self._handle(resp)
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> Any:
@@ -62,11 +70,7 @@ class TrelloClient:
         return self._request("PUT", path, params)
 
     def put_json(self, path: str, body: dict[str, Any]) -> Any:
-        url = f"{BASE_URL}{path}"
-        resp = self.session.put(
-            url, params=self._auth_params(), json=body, timeout=self.timeout
-        )
-        return self._handle(resp)
+        return self._request("PUT", path, json_body=body)
 
     def delete(self, path: str, params: dict[str, Any] | None = None) -> Any:
         return self._request("DELETE", path, params)
@@ -237,20 +241,20 @@ class TrelloClient:
         pos: str = "bottom",
         display_card_front: bool = True,
     ) -> dict[str, Any]:
-        params: dict[str, Any] = {
+        body: dict[str, Any] = {
             "idModel": board_id,
             "modelType": "board",
             "name": name,
             "type": type,
             "pos": pos,
-            "display_cardFront": "true" if display_card_front else "false",
+            "display": {"cardFront": display_card_front},
         }
         if options:
-            for i, opt in enumerate(options):
-                params[f"options[{i}][value][text]"] = opt
-                params[f"options[{i}][color]"] = "none"
-                params[f"options[{i}][pos]"] = str(i)
-        return self.post("/customFields", params)
+            body["options"] = [
+                {"value": {"text": opt}, "color": "none", "pos": i}
+                for i, opt in enumerate(options)
+            ]
+        return self._request("POST", path="/customFields", json_body=body)
 
     def get_custom_field_items(self, card_id: str) -> list[dict[str, Any]]:
         data = self.get(f"/cards/{card_id}/customFieldItems")
@@ -276,6 +280,4 @@ class TrelloClient:
 
 
 def _basename(path: str) -> str:
-    import os
-
     return os.path.basename(path)
