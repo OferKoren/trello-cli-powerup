@@ -23,8 +23,8 @@ function showToast(msg) {
 }
 
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('active'); });
-  document.querySelectorAll('.tab-content').forEach(function(d) { d.classList.remove('active'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b) { b.classList.remove('active'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.tab-content'), function(d) { d.classList.remove('active'); });
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('content-' + name).classList.add('active');
 }
@@ -84,7 +84,7 @@ function addSubtask(st) {
 
 function readForm() {
   var subtasks = [];
-  document.querySelectorAll('#subtasks .subtask-row').forEach(function(li) {
+  Array.prototype.forEach.call(document.querySelectorAll('#subtasks .subtask-row'), function(li) {
     var inputs = li.querySelectorAll('input');
     var selects = li.querySelectorAll('select');
     subtasks.push({
