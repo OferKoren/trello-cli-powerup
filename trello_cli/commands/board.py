@@ -89,18 +89,22 @@ AGENT_LISTS = [
 @click.option("--dry-run", is_flag=True, help="Print what would be created without doing it.")
 @click.option("--lists/--no-lists", "create_lists", default=True,
               help="Also scaffold the 8 agentic workflow columns (default: on).")
-def init_agent_fields_cmd(dry_run: bool, create_lists: bool) -> None:
+@click.option("--fields/--no-fields", "create_fields", default=True,
+              help="Scaffold the 8 agent Custom Fields (default: on). Requires paid Trello plan.")
+def init_agent_fields_cmd(dry_run: bool, create_lists: bool, create_fields: bool) -> None:
     cfg = load_config()
     require_auth(cfg)
     board_id = require_board(cfg)
     client = TrelloClient(cfg)
 
     # --- Custom Fields ---
-    existing_fields = client.list_custom_fields(board_id)
-    existing_names = {f["name"] for f in existing_fields}
-
     console.print("[bold]Custom Fields:[/bold]")
-    for spec in AGENT_FIELDS:
+    if not create_fields:
+        console.print("  [dim]skip[/dim]  (--no-fields)")
+    else:
+      existing_fields = client.list_custom_fields(board_id)
+      existing_names = {f["name"] for f in existing_fields}
+    for spec in AGENT_FIELDS if create_fields else []:
         name = spec["name"]
         if name in existing_names:
             console.print(f"  [dim]skip[/dim]  {name} (already exists)")
