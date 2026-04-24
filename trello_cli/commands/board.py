@@ -61,3 +61,70 @@ def show_cmd() -> None:
     for lst in lists:
         table.add_row(lst["id"], lst["name"])
     console.print(table)
+
+
+# --- agent powerup ---
+
+AGENT_FIELDS = [
+    {"name": "agent_status", "type": "list",
+     "options": ["idle", "planning", "planned", "working", "rejected", "approved", "merged"]},
+    {"name": "branch",       "type": "text"},
+    {"name": "worktree_path","type": "text"},
+    {"name": "model_tag",    "type": "list",
+     "options": ["haiku", "sonnet", "opus", "dynamic"]},
+    {"name": "agent_tag",    "type": "text"},
+    {"name": "last_run_at",  "type": "date"},
+    {"name": "spec_attached","type": "checkbox"},
+    {"name": "plan_attached","type": "checkbox"},
+]
+
+AGENT_LISTS = [
+    "human-planned", "agentic-planning", "agentic-planned",
+    "agentic-implementing", "manual-testing", "rejected", "approved", "merged",
+]
+
+
+@board.command("init-agent-fields",
+               help="Idempotently create the 8 agent Custom Fields and 8 workflow lists on the current board. Requires the built-in Custom Fields Power-Up enabled on the board.")
+@click.option("--dry-run", is_flag=True, help="Print what would be created without doing it.")
+@click.option("--lists/--no-lists", "create_lists", default=True,
+              help="Also scaffold the 8 agentic workflow columns (default: on).")
+def init_agent_fields_cmd(dry_run: bool, create_lists: bool) -> None:
+    cfg = load_config()
+    require_auth(cfg)
+    board_id = require_board(cfg)
+    client = TrelloClient(cfg)
+
+    # --- Custom Fields ---
+    existing_fields = client.list_custom_fields(board_id)
+    existing_names = {f["name"] for f in existing_fields}
+
+    console.print("[bold]Custom Fields:[/bold]")
+    for spec in AGENT_FIELDS:
+        name = spec["name"]
+        if name in existing_names:
+            console.print(f"  [dim]skip[/dim]  {name} (already exists)")
+            continue
+        if dry_run:
+            console.print(f"  [yellow]would create[/yellow]  {name} ({spec['type']})")
+        else:
+            client.create_custom_field(
+                board_id, name, spec["type"],
+                options=spec.get("options"),
+            )
+            console.print(f"  [green]created[/green]  {name} ({spec['type']})")
+
+    # --- Lists ---
+    if create_lists:
+        existing_lists = client.board_lists(board_id)
+        existing_list_names = {lst["name"] for lst in existing_lists}
+        console.print("[bold]Workflow lists:[/bold]")
+        for pos, list_name in enumerate(AGENT_LISTS, start=1):
+            if list_name in existing_list_names:
+                console.print(f"  [dim]skip[/dim]  {list_name} (already exists)")
+                continue
+            if dry_run:
+                console.print(f"  [yellow]would create[/yellow]  {list_name}")
+            else:
+                client.create_list(board_id, list_name, pos * 100)
+                console.print(f"  [green]created[/green]  {list_name}")

@@ -8,8 +8,10 @@ from trello_cli.commands.board import board
 from trello_cli.commands.card import card
 from trello_cli.commands.checklist import _register as _register_checklist
 from trello_cli.commands.list_cmd import list_cmd
+from trello_cli.commands.plan import _register as _register_plan
 
 _register_checklist(card)
+_register_plan(card)
 
 
 @click.group(help="Trello CLI — drive your board from the terminal (and from Claude Code).")

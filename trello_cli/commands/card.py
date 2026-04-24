@@ -354,3 +354,47 @@ def member_remove_cmd(card_query: str, member_query: str) -> None:
     console.print(
         f"[green]unassigned[/green] @{m.get('username')} from '{c['name']}'"
     )
+
+
+# --- agent powerup ---
+
+@card.command("attach-spec", help="Attach spec.md to a card and mark spec_attached=true.")
+@click.argument("card_query")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False))
+def attach_spec_cmd(card_query: str, path: str) -> None:
+    cfg = load_config()
+    require_auth(cfg)
+    board_id = require_board(cfg)
+    client = TrelloClient(cfg)
+    cards = client.board_cards(board_id)
+    c = resolve_card(cards, card_query)
+    att = client.attach_file(c["id"], path, "spec.md")
+    console.print(f"[green]attached spec.md[/green] to '{c['name']}' (attachment id: {att.get('id', '?')})")
+    # flip Custom Field
+    fields = client.list_custom_fields(board_id)
+    fields_map = {f["name"]: f for f in fields}
+    if "spec_attached" in fields_map:
+        field = fields_map["spec_attached"]
+        client.set_custom_field_value(c["id"], field["id"], True, "checkbox")
+        console.print("[green]set[/green] spec_attached = true")
+
+
+@card.command("attach-plan", help="Attach plan.md to a card and mark plan_attached=true.")
+@click.argument("card_query")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False))
+def attach_plan_cmd(card_query: str, path: str) -> None:
+    cfg = load_config()
+    require_auth(cfg)
+    board_id = require_board(cfg)
+    client = TrelloClient(cfg)
+    cards = client.board_cards(board_id)
+    c = resolve_card(cards, card_query)
+    att = client.attach_file(c["id"], path, "plan.md")
+    console.print(f"[green]attached plan.md[/green] to '{c['name']}' (attachment id: {att.get('id', '?')})")
+    # flip Custom Field
+    fields = client.list_custom_fields(board_id)
+    fields_map = {f["name"]: f for f in fields}
+    if "plan_attached" in fields_map:
+        field = fields_map["plan_attached"]
+        client.set_custom_field_value(c["id"], field["id"], True, "checkbox")
+        console.print("[green]set[/green] plan_attached = true")
