@@ -55,11 +55,12 @@ TrelloPowerUp.initialize({
   'card-detail-badges': function(t, opts) {
     return [{
       dynamic: function() {
+        var tick = Math.floor(Date.now() / 10000);
         return getAgentStatus(t).then(function(status) {
           return {
             title: 'Agent',
             text: status,
-            color: statusColor(status, 0),
+            color: statusColor(status, tick),
             refresh: 10
           };
         });
@@ -72,11 +73,9 @@ TrelloPowerUp.initialize({
       dynamic: function() {
         var tick = Math.floor(Date.now() / 10000);
         return getAgentStatus(t).then(function(status) {
-          return {
-            text: status === 'working' ? 'working' : null,
-            color: statusColor(status, tick),
-            refresh: 10
-          };
+          return status === 'working'
+            ? { text: 'working', color: tick % 2 === 0 ? 'green' : 'lime', refresh: 10 }
+            : { text: null, refresh: 10 };
         });
       }
     }];
