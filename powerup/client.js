@@ -74,7 +74,7 @@ TrelloPowerUp.initialize({
         var tick = Math.floor(Date.now() / 10000);
         return getAgentStatus(t).then(function(status) {
           return status === 'working'
-            ? { text: 'working', color: tick % 2 === 0 ? 'green' : 'lime', refresh: 10 }
+            ? { text: 'working', color: statusColor(status, tick), refresh: 10 }
             : { text: null, refresh: 10 };
         });
       }
