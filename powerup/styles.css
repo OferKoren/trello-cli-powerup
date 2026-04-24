@@ -242,3 +242,23 @@ body {
 }
 .settings-field input:focus { outline: none; border-color: #0052cc; }
 .version-note { font-size: 11px; color: #97a0af; margin-top: 14px; }
+
+/* ---- Collapse toggle ---- */
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #5e6c84;
+  user-select: none;
+  height: 36px;
+}
+
+.collapse-toggle:hover { color: #172b4d; }
+
+.collapse-arrow {
+  font-size: 10px;
+  transition: transform 0.15s;
+}
